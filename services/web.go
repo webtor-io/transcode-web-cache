@@ -83,7 +83,7 @@ func (s *Web) Serve() error {
 			return
 		}
 		if c == nil {
-			log.Warnf("Content not found path=%v hash=%v key=%v", r.Header.Get("X-Info-Hash"), r.Header.Get("X-Origin-Path"), key)
+			log.Warnf("Content not found path=%v hash=%v key=%v", r.Header.Get("X-Origin-Path"), r.Header.Get("X-Info-Hash"), key)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
