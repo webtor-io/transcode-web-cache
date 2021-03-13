@@ -102,7 +102,7 @@ func (s *Web) Serve() error {
 		}()
 	})
 	log.Infof("Serving Web at %v", addr)
-	return http.Serve(ln, allowCORSHandler(mux))
+	return http.Serve(ln, allowCORSHandler(enrichPlaylistHandler(mux)))
 }
 
 func (s *Web) Close() {
