@@ -23,15 +23,17 @@ type Web struct {
 	src  string
 	s3st *S3Storage
 	tp   *TouchPool
+	dp   *DonePool
 	ln   net.Listener
 }
 
-func NewWeb(c *cli.Context, s3st *S3Storage, tp *TouchPool) *Web {
+func NewWeb(c *cli.Context, s3st *S3Storage, tp *TouchPool, dp *DonePool) *Web {
 	return &Web{
 		host: c.String(webHostFlag),
 		port: c.Int(webPortFlag),
 		s3st: s3st,
 		tp:   tp,
+		dp:   dp,
 	}
 }
 
@@ -62,7 +64,7 @@ func (s *Web) Serve() error {
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/done", func(w http.ResponseWriter, r *http.Request) {
-		done, err := s.s3st.CheckDoneMarker(r.Context(), getKey(r))
+		done, err := s.dp.Done(getKey(r))
 		if err != nil {
 			log.WithError(err).Error("Failed to check done marker")
 			w.WriteHeader(http.StatusInternalServerError)

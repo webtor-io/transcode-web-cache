@@ -43,12 +43,15 @@ func run(c *cli.Context) error {
 	// Setting TouchPool
 	tp := s.NewTouchPool(s3st)
 
+	// Setting DonePool
+	dp := s.NewDonePool(s3st)
+
 	// Setting ProbeService
 	probe := cs.NewProbe(c)
 	defer probe.Close()
 
 	// Setting WebService
-	web := s.NewWeb(c, s3st, tp)
+	web := s.NewWeb(c, s3st, tp, dp)
 	defer web.Close()
 
 	// Setting ServeService
