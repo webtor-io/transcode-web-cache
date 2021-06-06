@@ -20,6 +20,8 @@ func enrichPlaylistHandler(h http.Handler) http.Handler {
 			return
 		}
 
+		r.Header.Del("Range")
+
 		wi := NewBufferedResponseWrtier(w)
 
 		h.ServeHTTP(wi, r)
