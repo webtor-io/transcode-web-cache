@@ -13,7 +13,7 @@ import (
 
 func enrichPlaylistHandler(h http.Handler) http.Handler {
 	re := regexp.MustCompile(`\.m3u8$`)
-	re2 := regexp.MustCompile(`[asv][0-9]+(\-[0-9]+)?\.[0-9a-z]{2,4}`)
+	re2 := regexp.MustCompile(`[asv][0-9]+(\-[0-9]+)?(\-[0-9]+)?\.[0-9a-z]{2,4}`)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !re.MatchString(r.URL.Path) {
 			h.ServeHTTP(w, r)
