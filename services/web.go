@@ -51,8 +51,11 @@ func RegisterWebFlags(c *cli.App) {
 }
 
 func getKey(r *http.Request) string {
-	path, infohash := r.Header.Get("X-Origin-Path"), r.Header.Get("X-Info-Hash")
-	key := fmt.Sprintf("%x", sha1.Sum([]byte("transcoder"+infohash+path)))
+	prefix, path, infohash := r.Header.Get("X-Key-Prefix"), r.Header.Get("X-Origin-Path"), r.Header.Get("X-Info-Hash")
+	if prefix == "" {
+		prefix = "transcoder"
+	}
+	key := fmt.Sprintf("%x", sha1.Sum([]byte(prefix+infohash+path)))
 	return key
 }
 
