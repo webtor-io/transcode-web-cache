@@ -40,6 +40,12 @@ func run(c *cli.Context) error {
 	// Setting S3 Storage
 	s3st := s.NewS3Storage(c, s3cl)
 
+	// Setting Cache
+	cache := s.NewCache(s3st)
+
+	// Setting LookaheadCache
+	lacache := s.NewLookaheadCache(cache)
+
 	// Setting TouchPool
 	tp := s.NewTouchPool(s3st)
 
@@ -51,7 +57,7 @@ func run(c *cli.Context) error {
 	defer probe.Close()
 
 	// Setting WebService
-	web := s.NewWeb(c, s3st, tp, dp)
+	web := s.NewWeb(c, lacache, tp, dp)
 	defer web.Close()
 
 	// Setting ServeService

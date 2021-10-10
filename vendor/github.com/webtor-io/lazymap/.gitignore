@@ -13,13 +13,3 @@
 *.db
 
 tmp
-
-.DS_Store
-
-transcode-web-cache
-
-__debug_bin
-
-cpu.prof
-
-cache/*

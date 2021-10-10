@@ -9,6 +9,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.5
 	github.com/webtor-io/common-services v0.0.0-20210226102216-588bd8948e0e
+	github.com/webtor-io/lazymap v0.0.0-20210807125002-852cc961265a
 	github.com/webtor-io/torrent-web-cache v0.0.0-20210118184726-4048b56f5086 // indirect
 )
 
