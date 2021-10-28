@@ -128,6 +128,7 @@ func (s *Web) Serve() error {
 	}
 	mux.HandleFunc("/done", func(w http.ResponseWriter, r *http.Request) {
 		done, err := s.dp.Done(s.getKey(r))
+		w.Header().Set("X-Cache-Key", s.getKey(r))
 		if err != nil {
 			log.WithError(err).Error("Failed to check done marker")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -141,6 +142,7 @@ func (s *Web) Serve() error {
 	})
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		key := s.getKey(r)
+		w.Header().Set("X-Cache-Key", key)
 		c, err := s.c.Get(key, r.URL.Path)
 		if err != nil {
 			log.WithError(err).Error("Failed to serve content")
