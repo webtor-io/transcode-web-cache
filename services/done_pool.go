@@ -23,7 +23,7 @@ func NewDonePool(st *S3Storage) *DonePool {
 	}
 }
 
-func (s *DonePool) Done(key string) (bool, error) {
+func (s *DonePool) Done(key string) (bool, *time.Time, error) {
 	df, loaded := s.sm.LoadOrStore(key, NewDoneFetcher(context.Background(), s.st, key))
 	if !loaded {
 		go func() {

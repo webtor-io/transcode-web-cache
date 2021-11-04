@@ -3,7 +3,6 @@ package services
 import (
 	"crypto/sha1"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 
@@ -127,7 +126,7 @@ func (s *Web) Serve() error {
 		mux.Handle("/player/", http.StripPrefix("/player/", http.FileServer(http.Dir("./player"))))
 	}
 	mux.HandleFunc("/done", func(w http.ResponseWriter, r *http.Request) {
-		done, err := s.dp.Done(s.getKey(r))
+		done, _, err := s.dp.Done(s.getKey(r))
 		w.Header().Set("X-Cache-Key", s.getKey(r))
 		if err != nil {
 			log.WithError(err).Error("Failed to check done marker")
@@ -143,6 +142,17 @@ func (s *Web) Serve() error {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		key := s.getKey(r)
 		w.Header().Set("X-Cache-Key", key)
+		d, t, err := s.dp.Done(s.getKey(r))
+		if err != nil {
+			log.WithError(err).Error("Failed to check done marker")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if !d {
+			log.Error("Transcoding not done yet")
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		c, err := s.c.Get(key, r.URL.Path)
 		if err != nil {
 			log.WithError(err).Error("Failed to serve content")
@@ -155,12 +165,7 @@ func (s *Web) Serve() error {
 			return
 		}
 		defer c.Close()
-		_, err = io.Copy(w, c)
-		if err != nil {
-			log.WithError(err).Error("Failed to read content")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+		http.ServeContent(w, r, "", *t, c)
 		go func() {
 			err := s.tp.Touch(key)
 			if err != nil {

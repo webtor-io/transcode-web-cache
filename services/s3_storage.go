@@ -60,20 +60,20 @@ func (s *S3Storage) GetContent(ctx context.Context, key string, path string) (io
 	return r.Body, nil
 }
 
-func (s *S3Storage) CheckDoneMarker(ctx context.Context, key string) (bool, error) {
+func (s *S3Storage) CheckDoneMarker(ctx context.Context, key string) (bool, *time.Time, error) {
 	key = "done/" + key
 	log.Infof("Check done marker bucket=%v key=%v", s.bucket, key)
-	_, err := s.cl.Get().GetObjectWithContext(ctx, &s3.GetObjectInput{
+	r, err := s.cl.Get().GetObjectWithContext(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
 	})
 	if err != nil {
 		if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == s3.ErrCodeNoSuchKey {
-			return false, nil
+			return false, nil, nil
 		}
-		return false, errors.Wrapf(err, "Failed to check done marker bucket=%v key=%v", s.bucket, key)
+		return false, nil, errors.Wrapf(err, "Failed to check done marker bucket=%v key=%v", s.bucket, key)
 	}
-	return true, nil
+	return true, r.LastModified, nil
 }
 
 func (s *S3Storage) Touch(ctx context.Context, key string) (err error) {

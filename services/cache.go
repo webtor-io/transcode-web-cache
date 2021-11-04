@@ -20,13 +20,15 @@ const (
 type Cache struct {
 	lazymap.LazyMap
 	s3st *S3Storage
+	dp   *DonePool
 	path string
 }
 
-func NewCache(s3st *S3Storage) *Cache {
+func NewCache(s3st *S3Storage, dp *DonePool) *Cache {
 	return &Cache{
 		s3st: s3st,
 		path: preloadCachePath,
+		dp:   dp,
 		LazyMap: lazymap.New(&lazymap.Config{
 			Concurrency: 10,
 			Expire:      60 * time.Second,
@@ -36,13 +38,21 @@ func NewCache(s3st *S3Storage) *Cache {
 	}
 }
 
-func (s *Cache) makeKey(key string, path string) string {
-	return fmt.Sprintf("%x", sha1.Sum([]byte(key+path)))
+func (s *Cache) makeKey(key string, path string) (string, error) {
+	_, t, err := s.dp.Done(key)
+	if err != nil {
+		return "", errors.Wrapf(err, "Failed to get key")
+	}
+	return fmt.Sprintf("%x", sha1.Sum([]byte(key+path+t.String()))), nil
 }
 
-func (s *Cache) Get(key string, path string) (io.ReadCloser, error) {
-	fPath := s.path + "/" + s.makeKey(key, path)
-	err := s.Preload(key, path)
+func (s *Cache) Get(key string, path string) (io.ReadSeekCloser, error) {
+	kk, err := s.makeKey(key, path)
+	if err != nil {
+		return nil, err
+	}
+	fPath := s.path + "/" + kk
+	err = s.Preload(key, path)
 	if err != nil {
 		if _, ok := err.(*NotFoundError); ok {
 			return nil, nil
@@ -61,8 +71,11 @@ type NotFoundError struct {
 }
 
 func (s *Cache) Preload(key string, path string) error {
-	kk := s.makeKey(key, path)
-	_, err := s.LazyMap.Get(kk, func() (interface{}, error) {
+	kk, err := s.makeKey(key, path)
+	if err != nil {
+		return err
+	}
+	_, err = s.LazyMap.Get(kk, func() (interface{}, error) {
 		p := s.path + "/" + kk
 		tp := s.path + "/_" + kk
 		if _, err := os.Stat(p); os.IsNotExist(err) {

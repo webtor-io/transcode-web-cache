@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"sync"
+	"time"
 )
 
 type DoneFetcher struct {
@@ -13,6 +14,7 @@ type DoneFetcher struct {
 	inited bool
 	ctx    context.Context
 	key    string
+	t      *time.Time
 }
 
 func NewDoneFetcher(ctx context.Context, st *S3Storage, key string) *DoneFetcher {
@@ -23,18 +25,18 @@ func NewDoneFetcher(ctx context.Context, st *S3Storage, key string) *DoneFetcher
 	}
 }
 
-func (s *DoneFetcher) Fetch() (bool, error) {
+func (s *DoneFetcher) Fetch() (bool, *time.Time, error) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 	if s.inited {
-		return s.res, s.err
+		return s.res, s.t, s.err
 	}
-	s.res, s.err = s.fetch()
+	s.res, s.t, s.err = s.fetch()
 	s.inited = true
-	return s.res, s.err
+	return s.res, s.t, s.err
 }
 
-func (s *DoneFetcher) fetch() (res bool, err error) {
-	res, err = s.st.CheckDoneMarker(s.ctx, s.key)
+func (s *DoneFetcher) fetch() (res bool, t *time.Time, err error) {
+	res, t, err = s.st.CheckDoneMarker(s.ctx, s.key)
 	return
 }

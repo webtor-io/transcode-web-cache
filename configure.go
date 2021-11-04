@@ -40,17 +40,17 @@ func run(c *cli.Context) error {
 	// Setting S3 Storage
 	s3st := s.NewS3Storage(c, s3cl)
 
-	// Setting Cache
-	cache := s.NewCache(s3st)
-
-	// Setting LookaheadCache
-	lacache := s.NewLookaheadCache(cache)
-
 	// Setting TouchPool
 	tp := s.NewTouchPool(s3st)
 
 	// Setting DonePool
 	dp := s.NewDonePool(s3st)
+
+	// Setting Cache
+	cache := s.NewCache(s3st, dp)
+
+	// Setting LookaheadCache
+	lacache := s.NewLookaheadCache(cache)
 
 	// Setting ProbeService
 	probe := cs.NewProbe(c)

@@ -71,7 +71,7 @@ func NewLookaheadCache(c *Cache) *LookaheadCache {
 	}
 }
 
-func (s *LookaheadCache) Get(key string, path string) (io.ReadCloser, error) {
+func (s *LookaheadCache) Get(key string, path string) (io.ReadSeekCloser, error) {
 	go s.Preload(key, path)
 	return s.c.Get(key, path)
 }
