@@ -118,7 +118,7 @@ func (s *Web) Serve() error {
 	addr := fmt.Sprintf("%s:%d", s.host, s.port)
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
-		return errors.Wrap(err, "Failed to web listen to tcp connection")
+		return errors.Wrap(err, "failed to web listen to tcp connection")
 	}
 	mux := http.NewServeMux()
 	if s.pl {
@@ -129,7 +129,7 @@ func (s *Web) Serve() error {
 		done, _, err := s.dp.Done(s.getKey(r))
 		w.Header().Set("X-Cache-Key", s.getKey(r))
 		if err != nil {
-			log.WithError(err).Error("Failed to check done marker")
+			log.WithError(err).Error("failed to check done marker")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -144,23 +144,23 @@ func (s *Web) Serve() error {
 		w.Header().Set("X-Cache-Key", key)
 		d, t, err := s.dp.Done(s.getKey(r))
 		if err != nil {
-			log.WithError(err).Error("Failed to check done marker")
+			log.WithError(err).Error("failed to check done marker")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		if !d {
-			log.Error("Transcoding not done yet")
+			log.Error("transcoding not done yet")
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		c, err := s.c.Get(key, r.URL.Path)
 		if err != nil {
-			log.WithError(err).Error("Failed to serve content")
+			log.WithError(err).Error("failed to serve content")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		if c == nil {
-			log.Warnf("Content not found path=%v hash=%v key=%v", s.getOriginPath(r), s.getInfoHash(r), key)
+			log.Warnf("content not found path=%v hash=%v key=%v", s.getOriginPath(r), s.getInfoHash(r), key)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -169,11 +169,11 @@ func (s *Web) Serve() error {
 		go func() {
 			err := s.tp.Touch(key)
 			if err != nil {
-				log.WithError(err).Error("Failed to touch")
+				log.WithError(err).Error("failed to touch")
 			}
 		}()
 	})
-	log.Infof("Serving Web at %v", addr)
+	log.Infof("serving Web at %v", addr)
 	return http.Serve(ln, allowCORSHandler(enrichPlaylistHandler(mux)))
 }
 

@@ -3,15 +3,14 @@ package main
 import (
 	"os"
 
-	joonix "github.com/joonix/log"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
 func main() {
-
-	log.SetFormatter(joonix.NewFormatter())
-	log.SetLevel(log.DebugLevel)
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+	})
 	app := cli.NewApp()
 	app.Name = "torrent-web-cache"
 	app.Usage = "Serves cached torrent data"

@@ -24,6 +24,9 @@ func NewFragment(str string) *Fragment {
 	if len(parts) != 2 {
 		return nil
 	}
+	if parts[1] == "m3u8" {
+		return nil
+	}
 	parts2 := strings.Split(parts[0], "-")
 	if len(parts) < 2 {
 		return nil

@@ -30,7 +30,7 @@ func NewCache(s3st *S3Storage, dp *DonePool) *Cache {
 		path: preloadCachePath,
 		dp:   dp,
 		LazyMap: lazymap.New(&lazymap.Config{
-			Concurrency: 10,
+			Concurrency: 100,
 			Expire:      60 * time.Second,
 			ErrorExpire: 30 * time.Second,
 			Capacity:    1000,
@@ -41,7 +41,7 @@ func NewCache(s3st *S3Storage, dp *DonePool) *Cache {
 func (s *Cache) makeKey(key string, path string) (string, error) {
 	_, t, err := s.dp.Done(key)
 	if err != nil {
-		return "", errors.Wrapf(err, "Failed to get key")
+		return "", errors.Wrapf(err, "failed to get key")
 	}
 	return fmt.Sprintf("%x", sha1.Sum([]byte(key+path+t.String()))), nil
 }
@@ -57,7 +57,7 @@ func (s *Cache) Get(key string, path string) (io.ReadSeekCloser, error) {
 		if _, ok := err.(*NotFoundError); ok {
 			return nil, nil
 		}
-		return nil, errors.Wrapf(err, "Failed to preload key=%v path=%v", key, path)
+		return nil, errors.Wrapf(err, "failed to preload key=%v path=%v", key, path)
 	}
 	f, err := os.Open(fPath)
 	if err != nil {
@@ -83,31 +83,31 @@ func (s *Cache) Preload(key string, path string) error {
 			defer cancel()
 			c, err := s.s3st.GetContent(ctx, key, path)
 			if err != nil {
-				return nil, errors.Wrapf(err, "Failed to get S3 content key=%v path=%v", key, path)
+				return nil, errors.Wrapf(err, "failed to get S3 content key=%v path=%v", key, path)
 			}
 			if c == nil {
 				return nil, &NotFoundError{}
 			}
 			f, err := os.Create(tp)
 			if err != nil {
-				return nil, errors.Wrapf(err, "Failed to create preload file path=%v", tp)
+				return nil, errors.Wrapf(err, "failed to create preload file path=%v", tp)
 			}
 			_, err = io.Copy(f, c)
 			if err != nil {
-				return nil, errors.Wrapf(err, "Failed to copy data path=%v", tp)
+				return nil, errors.Wrapf(err, "failed to copy data path=%v", tp)
 			}
 			err = os.Rename(tp, p)
 			if err != nil {
-				return nil, errors.Wrapf(err, "Failed to rename file from=%v to=%v", tp, p)
+				return nil, errors.Wrapf(err, "failed to rename file from=%v to=%v", tp, p)
 			}
 			return nil, nil
 		} else {
 			t := time.Now().Local()
 			err := os.Chtimes(p, t, t)
 			if err != nil {
-				return nil, errors.Wrapf(err, "Failed to change preload file modification date path=%v", p)
+				return nil, errors.Wrapf(err, "failed to change preload file modification date path=%v", p)
 			}
-			log.Infof("Preload data already exists path=%v", p)
+			log.Infof("preload data already exists path=%v", p)
 			return nil, nil
 		}
 	})
