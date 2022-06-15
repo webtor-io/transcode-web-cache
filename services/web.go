@@ -83,6 +83,9 @@ func (s *Web) getKeyPrefix(r *http.Request) string {
 	if s.kp != "" {
 		return s.kp
 	}
+	if r.URL.Query().Get("prefix") != "" {
+		return r.URL.Query().Get("prefix")
+	}
 	if r.Header.Get("X-Key-Prefix") != "" {
 		return r.Header.Get("X-Key-Prefix")
 	}
@@ -93,6 +96,9 @@ func (s *Web) getOriginPath(r *http.Request) string {
 	if s.op != "" {
 		return s.op
 	}
+	if r.URL.Query().Get("path") != "" {
+		return r.URL.Query().Get("path")
+	}
 	if r.Header.Get("X-Origin-Path") != "" {
 		return r.Header.Get("X-Origin-Path")
 	}
@@ -102,6 +108,9 @@ func (s *Web) getOriginPath(r *http.Request) string {
 func (s *Web) getInfoHash(r *http.Request) string {
 	if s.ih != "" {
 		return s.ih
+	}
+	if r.URL.Query().Get("hash") != "" {
+		return r.URL.Query().Get("hash")
 	}
 	if r.Header.Get("X-Info-Hash") != "" {
 		return r.Header.Get("X-Info-Hash")
